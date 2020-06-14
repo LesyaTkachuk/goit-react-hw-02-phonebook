@@ -1,19 +1,48 @@
 import React, { Component } from "react";
+import { uuid } from "uuidv4";
+import { ToastContainer, toast } from "react-toastify";
+
 import Section from "./Section/Section";
 import ContactForm from "./ContactForm/ContactForm";
-import { uuid } from "uuidv4";
 import Filter from "./Filter/Filter";
 import ContactList from "./ComtactList/ContactList";
 
+import localStorageMethods from "../utils/localStorageMethods";
+
+import "react-toastify/dist/ReactToastify.css";
+
 class App extends Component {
   state = {
-    contacts: [
-      { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-      { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-      { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-      { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-    ],
+    contacts: [],
     filter: "",
+  };
+
+  componentDidMount() {
+    const storedTasks = localStorageMethods.get("contacts");
+
+    if (storedTasks) {
+      this.setState({
+        contacts: storedTasks,
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { contacts } = this.state;
+
+    localStorageMethods.save("contacts", contacts, prevState);
+  }
+
+  showNotification = (message) => {
+    toast(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   addContact = ({ name, number }) => {
@@ -24,11 +53,12 @@ class App extends Component {
     };
 
     if (contact.name === "") {
-      alert("Please enter contact name");
+      this.showNotification("🦄 Please enter contact name");
+
       return;
     }
     if (contact.number === "") {
-      alert("Please enter contact phone number");
+      this.showNotification("🦄 Please enter contact phone number");
       return;
     }
 
@@ -37,7 +67,7 @@ class App extends Component {
     );
 
     hasContact
-      ? alert(`${name} is already in contacts`)
+      ? this.showNotification(`${name} is already in contacts`)
       : this.setState((prevState) => ({
           contacts: [...prevState.contacts, contact],
         }));
@@ -81,6 +111,17 @@ class App extends Component {
             />
           </Section>
         )}
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </>
     );
   }
